@@ -39,7 +39,8 @@ class Courier extends Model
 
     public function zones()
     {
-        return $this->belongsToMany(Zone::class, 'shipping_courier_zone_rates')
-            ->withPivot(['estimated_delivery', 'is_active']);
+        $table = config('shipping.tables.courier_zone_rates', 'shipping_courier_zone_rates');
+        return $this->belongsToMany(Zone::class, $table)
+            ->withPivot(['rate', 'estimated_delivery', 'is_active']);
     }
 }

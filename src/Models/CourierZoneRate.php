@@ -11,11 +11,13 @@ class CourierZoneRate extends Model
     protected $fillable = [
         'courier_id',
         'zone_id',
+        'rate',
         'estimated_delivery',
         'is_active',
     ];
 
     protected $casts = [
+        'rate' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

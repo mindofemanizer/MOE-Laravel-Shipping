@@ -41,7 +41,7 @@ return [
 
         'local' => 'Lokal',
         'internal' => 'Dalam Kota',
-        'intercity' => ' Antar Kota',
+        'intercity' => 'Antar Kota',
         'interisland' => 'Antar Pulau',
         'national' => 'Nasional',
 

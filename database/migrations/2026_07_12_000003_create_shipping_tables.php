@@ -8,7 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('shipping_couriers', function (Blueprint $table) {
+        $couriersTable = config('shipping.tables.couriers', 'shipping_couriers');
+        $zonesTable = config('shipping.tables.zones', 'shipping_zones');
+        $ratesTable = config('shipping.tables.courier_zone_rates', 'shipping_courier_zone_rates');
+
+        Schema::create($couriersTable, function (Blueprint $table) {
             $table->id();
             $table->string('code', 50)->unique();
             $table->string('name');
@@ -20,7 +24,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('shipping_zones', function (Blueprint $table) {
+        Schema::create($zonesTable, function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
@@ -32,10 +36,11 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('shipping_courier_zone_rates', function (Blueprint $table) {
+        Schema::create($ratesTable, function (Blueprint $table) use ($couriersTable, $zonesTable) {
             $table->id();
-            $table->foreignId('courier_id')->constrained('shipping_couriers')->cascadeOnDelete();
-            $table->foreignId('zone_id')->constrained('shipping_zones')->cascadeOnDelete();
+            $table->foreignId('courier_id')->constrained($couriersTable)->cascadeOnDelete();
+            $table->foreignId('zone_id')->constrained($zonesTable)->cascadeOnDelete();
+            $table->decimal('rate', 15, 2)->default(0);
             $table->string('estimated_delivery')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
@@ -46,8 +51,12 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('shipping_courier_zone_rates');
-        Schema::dropIfExists('shipping_zones');
-        Schema::dropIfExists('shipping_couriers');
+        $ratesTable = config('shipping.tables.courier_zone_rates', 'shipping_courier_zone_rates');
+        $zonesTable = config('shipping.tables.zones', 'shipping_zones');
+        $couriersTable = config('shipping.tables.couriers', 'shipping_couriers');
+
+        Schema::dropIfExists($ratesTable);
+        Schema::dropIfExists($zonesTable);
+        Schema::dropIfExists($couriersTable);
     }
 };

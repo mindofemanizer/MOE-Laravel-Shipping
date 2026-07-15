@@ -3,15 +3,12 @@
 namespace Moe\Shipping\Services;
 
 use Moe\Core\Base\BaseService;
-use Moe\Shipping\Contracts\ShippingRateProviderInterface;
 use Moe\Shipping\Models\Courier;
+use Moe\Shipping\Models\CourierZoneRate;
 use Moe\Shipping\Models\Zone;
 
 class ShippingService extends BaseService
 {
-    /**
-     * Get available couriers for a zone.
-     */
     public function getCouriersForZone(int $zoneId): \Illuminate\Database\Eloquent\Collection
     {
         return Courier::where('is_active', true)
@@ -21,9 +18,6 @@ class ShippingService extends BaseService
             ->get();
     }
 
-    /**
-     * Get zone by village code.
-     */
     public function getZoneByVillageCode(string $villageCode): ?Zone
     {
         return Zone::where('is_active', true)
@@ -31,33 +25,32 @@ class ShippingService extends BaseService
             ->first();
     }
 
-    /**
-     * Calculate shipping cost.
-     */
     public function calculateShipping(int $zoneId, int $courierId, float $weight, float $orderTotal): float
     {
         $zone = Zone::findOrFail($zoneId);
-        $baseRate = $zone->getBaseRate();
 
         $freeMinimum = $zone->getFreeShippingMinimum();
         if ($freeMinimum && $orderTotal >= $freeMinimum) {
             return 0;
         }
 
-        return $baseRate;
+        $rate = CourierZoneRate::where('courier_id', $courierId)
+            ->where('zone_id', $zoneId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $rate) {
+            return $zone->getBaseRate();
+        }
+
+        return (float) $rate->rate;
     }
 
-    /**
-     * Get all active zones.
-     */
     public function getActiveZones(): \Illuminate\Database\Eloquent\Collection
     {
         return Zone::where('is_active', true)->get();
     }
 
-    /**
-     * Get all active couriers.
-     */
     public function getActiveCouriers(): \Illuminate\Database\Eloquent\Collection
     {
         return Courier::where('is_active', true)->get();
