@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Moe\Shipping\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CourierZoneRate extends Model
 {
@@ -27,12 +30,12 @@ class CourierZoneRate extends Model
         $this->table = config('shipping.tables.courier_zone_rates', 'shipping_courier_zone_rates');
     }
 
-    public function courier()
+    public function courier(): BelongsTo
     {
         return $this->belongsTo(Courier::class);
     }
 
-    public function zone()
+    public function zone(): BelongsTo
     {
         return $this->belongsTo(Zone::class);
     }

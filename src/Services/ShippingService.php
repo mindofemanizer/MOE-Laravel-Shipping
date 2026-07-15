@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Moe\Shipping\Services;
 
+use Illuminate\Database\Eloquent\Collection;
 use Moe\Core\Base\BaseService;
 use Moe\Shipping\Models\Courier;
 use Moe\Shipping\Models\CourierZoneRate;
@@ -9,7 +12,7 @@ use Moe\Shipping\Models\Zone;
 
 class ShippingService extends BaseService
 {
-    public function getCouriersForZone(int $zoneId): \Illuminate\Database\Eloquent\Collection
+    public function getCouriersForZone(int $zoneId): Collection
     {
         return Courier::where('is_active', true)
             ->whereHas('zoneRates', function ($q) use ($zoneId) {
@@ -30,7 +33,7 @@ class ShippingService extends BaseService
         $zone = Zone::findOrFail($zoneId);
 
         $freeMinimum = $zone->getFreeShippingMinimum();
-        if ($freeMinimum && $orderTotal >= $freeMinimum) {
+        if ($freeMinimum !== null && $orderTotal >= $freeMinimum) {
             return 0;
         }
 
@@ -46,12 +49,12 @@ class ShippingService extends BaseService
         return (float) $rate->rate;
     }
 
-    public function getActiveZones(): \Illuminate\Database\Eloquent\Collection
+    public function getActiveZones(): Collection
     {
         return Zone::where('is_active', true)->get();
     }
 
-    public function getActiveCouriers(): \Illuminate\Database\Eloquent\Collection
+    public function getActiveCouriers(): Collection
     {
         return Courier::where('is_active', true)->get();
     }

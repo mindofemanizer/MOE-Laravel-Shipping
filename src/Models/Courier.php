@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Moe\Shipping\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -37,9 +40,10 @@ class Courier extends Model
         return $this->hasMany(CourierZoneRate::class, 'courier_id');
     }
 
-    public function zones()
+    public function zones(): BelongsToMany
     {
         $table = config('shipping.tables.courier_zone_rates', 'shipping_courier_zone_rates');
+
         return $this->belongsToMany(Zone::class, $table)
             ->withPivot(['rate', 'estimated_delivery', 'is_active']);
     }
