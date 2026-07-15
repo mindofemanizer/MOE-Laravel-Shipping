@@ -8,11 +8,17 @@ use Illuminate\Support\ServiceProvider;
 
 class ShippingServiceProvider extends ServiceProvider
 {
+    /**
+     * Register the service provider.
+     */
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/shipping.php', 'shipping');
     }
 
+    /**
+     * Bootstrap the application services.
+     */
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');

@@ -12,6 +12,9 @@ use Moe\Shipping\Models\Zone;
 
 class ShippingService extends BaseService
 {
+    /**
+     * Get couriers available for a zone.
+     */
     public function getCouriersForZone(int $zoneId): Collection
     {
         return Courier::where('is_active', true)
@@ -21,6 +24,9 @@ class ShippingService extends BaseService
             ->get();
     }
 
+    /**
+     * Get zone by village code.
+     */
     public function getZoneByVillageCode(string $villageCode): ?Zone
     {
         return Zone::where('is_active', true)
@@ -28,6 +34,11 @@ class ShippingService extends BaseService
             ->first();
     }
 
+    /**
+     * Calculate shipping cost for a zone, courier, weight, and order total.
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function calculateShipping(int $zoneId, int $courierId, float $weight, float $orderTotal): float
     {
         $zone = Zone::findOrFail($zoneId);
@@ -49,11 +60,17 @@ class ShippingService extends BaseService
         return (float) $rate->rate;
     }
 
+    /**
+     * Get all active zones.
+     */
     public function getActiveZones(): Collection
     {
         return Zone::where('is_active', true)->get();
     }
 
+    /**
+     * Get all active couriers.
+     */
     public function getActiveCouriers(): Collection
     {
         return Courier::where('is_active', true)->get();
