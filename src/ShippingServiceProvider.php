@@ -23,12 +23,14 @@ class ShippingServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        $this->publishes([
-            __DIR__.'/../config/shipping.php' => config_path('shipping.php'),
-        ], 'shipping-config');
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/shipping.php' => config_path('shipping.php'),
+            ], 'shipping-config');
 
-        $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], 'shipping-migrations');
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'shipping-migrations');
+        }
     }
 }

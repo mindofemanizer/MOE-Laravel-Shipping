@@ -1,11 +1,11 @@
-# MOE-Laravel-Shipping
+﻿# MOE-Laravel-Shipping
 
-Shipping module for MOE ecosystem — Courier, Zone, Rate.
+Shipping module for MOE ecosystem â€” Courier, Zone, Rate.
 
 ## Installation
 
 ```bash
-composer require moe/laravel-shipping
+composer require moe/laravel-shipping:dev-main
 php artisan vendor:publish --provider="Moe\Shipping\ShippingServiceProvider" --tag="shipping-config"
 php artisan vendor:publish --provider="Moe\Shipping\ShippingServiceProvider" --tag="shipping-migrations"
 php artisan migrate
