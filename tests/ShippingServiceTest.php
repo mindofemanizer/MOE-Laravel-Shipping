@@ -1,91 +1,77 @@
 <?php
 
-namespace Moe\Shipping\Tests;
-
 use Moe\Shipping\Models\Courier;
 use Moe\Shipping\Models\CourierZoneRate;
 use Moe\Shipping\Models\Zone;
 use Moe\Shipping\Services\ShippingService;
 
-class ShippingServiceTest extends TestCase
-{
-    private ShippingService $service;
+beforeEach(function () {
+    $this->service = new ShippingService();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->service = new ShippingService();
-    }
+it('can create courier', function () {
+    $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
 
-    public function test_can_create_courier()
-    {
-        $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
+    expect($courier)->toBeInstanceOf(Courier::class);
+    expect($courier->name)->toEqual('JNE');
+});
 
-        $this->assertInstanceOf(Courier::class, $courier);
-        $this->assertEquals('JNE', $courier->name);
-    }
+it('can create zone', function () {
+    $zone = Zone::create([
+        'name' => 'Jakarta Pusat',
+        'slug' => 'jakpus',
+        'type' => 'local',
+        'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
+        'is_active' => true,
+    ]);
 
-    public function test_can_create_zone()
-    {
-        $zone = Zone::create([
-            'name' => 'Jakarta Pusat',
-            'slug' => 'jakpus',
-            'type' => 'local',
-            'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
-            'is_active' => true,
-        ]);
+    expect($zone)->toBeInstanceOf(Zone::class);
+    expect($zone->getBaseRate())->toEqual(10000);
+});
 
-        $this->assertInstanceOf(Zone::class, $zone);
-        $this->assertEquals(10000, $zone->getBaseRate());
-    }
+it('can calculate shipping', function () {
+    $zone = Zone::create([
+        'name' => 'Jakarta Pusat',
+        'slug' => 'jakpus',
+        'type' => 'local',
+        'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
+        'is_active' => true,
+    ]);
 
-    public function test_can_calculate_shipping()
-    {
-        $zone = Zone::create([
-            'name' => 'Jakarta Pusat',
-            'slug' => 'jakpus',
-            'type' => 'local',
-            'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
-            'is_active' => true,
-        ]);
+    $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
 
-        $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
+    CourierZoneRate::create([
+        'courier_id' => $courier->id,
+        'zone_id' => $zone->id,
+        'rate' => 15000,
+        'is_active' => true,
+    ]);
 
-        CourierZoneRate::create([
-            'courier_id' => $courier->id,
-            'zone_id' => $zone->id,
-            'rate' => 15000,
-            'is_active' => true,
-        ]);
+    $cost = $this->service->calculateShipping($zone->id, $courier->id, 2, 25000);
 
-        $cost = $this->service->calculateShipping($zone->id, $courier->id, 2, 25000);
+    expect($cost)->toEqual(15000);
+});
 
-        $this->assertEquals(15000, $cost);
-    }
+it('applies free shipping', function () {
+    $zone = Zone::create([
+        'name' => 'Jakarta Pusat',
+        'slug' => 'jakpus',
+        'type' => 'local',
+        'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
+        'is_active' => true,
+    ]);
 
-    public function test_free_shipping_applied()
-    {
-        $zone = Zone::create([
-            'name' => 'Jakarta Pusat',
-            'slug' => 'jakpus',
-            'type' => 'local',
-            'config' => ['base_rate' => 10000, 'free_shipping_minimum' => 50000],
-            'is_active' => true,
-        ]);
+    $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
 
-        $courier = Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
+    $cost = $this->service->calculateShipping($zone->id, $courier->id, 2, 100000);
 
-        $cost = $this->service->calculateShipping($zone->id, $courier->id, 2, 100000);
+    expect($cost)->toEqual(0);
+});
 
-        $this->assertEquals(0, $cost);
-    }
+it('gets active couriers', function () {
+    Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
+    Courier::create(['name' => 'TIKI', 'code' => 'tiki', 'is_active' => false]);
 
-    public function test_get_active_couriers()
-    {
-        Courier::create(['name' => 'JNE', 'code' => 'jne', 'is_active' => true]);
-        Courier::create(['name' => 'TIKI', 'code' => 'tiki', 'is_active' => false]);
-
-        $active = $this->service->getActiveCouriers();
-        $this->assertCount(1, $active);
-    }
-}
+    $active = $this->service->getActiveCouriers();
+    expect($active)->toHaveCount(1);
+});
